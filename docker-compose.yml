@@ -1,0 +1,7 @@
+version: '3.8'
+
+services:
+  x-kom-opener:
+    build: .
+    container_name: xkom_opener
+    restart: on-failure
