@@ -1,5 +1,4 @@
 import requests
-import json
 import random
 import os
 import time
@@ -10,7 +9,9 @@ init(autoreset=True)
 
 CREDENTIALS_FILE = "credentials"
 API_KEY = "bekorcfmGwGMw9Nh"
-scraper = cloudscraper.create_scraper(browser={'custom': 'xkom_prod/1.123.0'})
+
+USER_AGENT = "xkom_prod/1.133.2"
+scraper = cloudscraper.create_scraper(browser={'custom': USER_AGENT})
 
 
 def load_credentials():
@@ -87,7 +88,7 @@ def send_to_discord(webhook_url, item_details, user_id_to_ping):
 def get_access_token(login, password):
     print(f"{Fore.YELLOW}[*] Attempting to log in to account: {login}...")
     token_url = "https://auth.x-kom.pl/xkom/Token"
-    token_headers = {"Content-Type": "application/x-www-form-urlencoded", "User-Agent": "xkom_prod/1.123.0"}
+    token_headers = {"Content-Type": "application/x-www-form-urlencoded", "User-Agent": USER_AGENT}
     token_data = {
         "grant_type": "password", "username": login, "password": password,
         "client_id": "android", "scope": "api_v1 offline_access"
@@ -111,13 +112,20 @@ def grant_required_consents(access_token):
     print(f"{Fore.YELLOW}[*] Attempting to accept the consent for personalized offers...")
     consent_url = "https://mobileapi.x-kom.pl/api/v1/xkom/Account/Consents"
     headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json; charset=UTF-8",
-               "User-Agent": "xkom_prod/1.123.0", "x-api-key": API_KEY}
+               "User-Agent": USER_AGENT, "x-api-key": API_KEY}
     data = {"ConsentOrigin": "nw_xkom_unbox", "ConsentValues": [{"Code": "offer_adaptin", "IsSelected": True}]}
     try:
         response = scraper.put(consent_url, headers=headers, json=data)
         response.raise_for_status()
         print(f"{Fore.GREEN}[+] Consent successfully accepted.")
         return True
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 400:
+            print(
+                f"{Fore.YELLOW}[!] Received 400 Bad Request. The consent might already be granted or API payload changed. Proceeding...")
+            return True
+        print(f"{Fore.RED}[-] HTTP Error while accepting consent: {e}")
+        return False
     except Exception as e:
         print(f"{Fore.RED}[-] Error while accepting consent: {e}")
         return False
@@ -126,7 +134,7 @@ def grant_required_consents(access_token):
 def open_box(box_id, access_token, webhook_url, user_id_to_ping):
     print(f"\n{Fore.CYAN}[>>] Opening box number {box_id}...")
     roll_url = f"https://mobileapi.x-kom.pl/api/v1/xkom/Box/{box_id}/Items"
-    headers = {"Authorization": f"Bearer {access_token}", "X-API-Key": API_KEY, "User-Agent": "xkom_prod/1.123.0"}
+    headers = {"Authorization": f"Bearer {access_token}", "X-API-Key": API_KEY, "User-Agent": USER_AGENT}
 
     try:
         roll_response = scraper.put(roll_url, headers=headers)
@@ -182,11 +190,11 @@ def main():
 
     access_token = get_access_token(xkom_login, xkom_password)
     if access_token:
-        consent_granted = grant_required_consents(access_token)
-        if consent_granted:
-            for box_id in [1, 2, 3]:
-                open_box(box_id, access_token, webhook_url, user_id_to_ping)
-                time.sleep(2)
+        grant_required_consents(access_token)
+
+        for box_id in [1, 2, 3]:
+            open_box(box_id, access_token, webhook_url, user_id_to_ping)
+            time.sleep(2)
 
     print(f"\n{Fore.MAGENTA}--- Script finished ---")
 
