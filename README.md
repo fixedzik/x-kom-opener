@@ -14,11 +14,7 @@
 
 ## How to use
 
-```bash
-# Install Docker
-$ apt install docker # Debian/Ubuntu
-$ apk add docker # Alpine Linux
-```
+You must have [Docker](https://docs.docker.com/engine/install/debian/)
 
 ```bash
 # Clone this repository
