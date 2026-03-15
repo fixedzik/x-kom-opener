@@ -14,17 +14,51 @@
 
 ## How to use
 
-To clone and run this script, you'll need [Git](https://git-scm.com) installed on your computer. From your command line:
-
 ```bash
 # Install Docker
-$ apt install docker
+$ apt install docker # Debian/Ubuntu
+$ apk add docker # Alpine Linux
 ```
+
+```bash
+# Clone this repository
+$ git clone https://github.com/fixedzik/x-kom-opener.git
+```
+
+```bash
+# Fill your credentials file with your login, password and discord webhook
+$ cd x-kom-opener
+$ vim credentials
+```
+
+```bash
+# Test your configuration
+$ /usr/bin/docker compose build
+$ /usr/bin/docker compose up
+```
+
+If no error occurs, it means that the script is working and can be connected to the system automation.
+
+```bash
+# Edit your crontab
+$ crontab -e
+
+# and paste this in the last line
+0 8 * * * cd /root/x-kom-opener && /usr/bin/docker compose up >> /root/x-kom-opener/cron.log 2>&1
+# (/root/x-kom-opener this is the path where I downloaded the repository)
+
+# Restart crontab service
+$ service cron restart # Debian/Ubuntu
+$ rc-service crond restart # Alpine Linux
+```
+
+That's it! After all these steps, the script should run at 8:00am every day!
 
 ## Support
 
-- Ubuntu Server 22.04.4
-- Ubuntu Server 23.10
+- Debian
+- Ubuntu
+- Alpine Linux
 
 ## Support the Developers
 
