@@ -6,7 +6,6 @@
 <h4 align="center">A Python script to automatically open x-kom promotional boxes and send loot notifications to Discord</h4>
 
 <p align="center">
-  <a href="#warning">Warning</a> •
   <a href="#how-to-use">How to use</a> •
   <a href="#support">Support</a> •
   <a href="#support-the-developers">Support the Developers</a> •
